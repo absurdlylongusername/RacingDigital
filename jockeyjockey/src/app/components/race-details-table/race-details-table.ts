@@ -27,6 +27,7 @@ export class RaceDetailsTable implements AfterViewInit {
   ];
   data = signal<RawRaceRow[]>([]);
   dataSource = new MatTableDataSource<RawRaceRow>([]);
+  selectedJockey = signal<string | null>(null);
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -35,6 +36,8 @@ export class RaceDetailsTable implements AfterViewInit {
       const rows = this.csv.selectedRaceDetailsRows();
       this.data.set(rows);
       this.dataSource.data = rows;
+      this.selectedJockey.set(this.csv.selectedJockey());
+
     });
     this.dataSource.sortingDataAccessor = (item, property) => {
       switch (property) {
@@ -47,6 +50,11 @@ export class RaceDetailsTable implements AfterViewInit {
         default: return (item as any)[property];
       }
     };
+  }
+
+  isSelected(row: RawRaceRow) : boolean
+  {
+    return this.selectedJockey() === row.Jockey;
   }
 
   ngAfterViewInit() {

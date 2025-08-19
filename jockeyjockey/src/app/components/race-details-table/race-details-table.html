@@ -40,7 +40,8 @@
 
       <!-- sticky header -->
       <tr mat-header-row *matHeaderRowDef="cols; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: cols;"></tr>
+      <tr mat-row *matRowDef="let row; columns: cols;"
+          [class.selected]="isSelected(row)"></tr>
     </table>
   </div>
 </mat-card>
