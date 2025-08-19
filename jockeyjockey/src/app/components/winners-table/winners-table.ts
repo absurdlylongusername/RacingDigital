@@ -24,17 +24,38 @@ export class WinnersTable implements AfterViewInit {
   dataSource = new MatTableDataSource<WinnerRow>([]);
   @ViewChild(MatSort) sort!: MatSort;
 
+  selectedRace = signal<string | null>(null);
+
   constructor(private csv: CsvService) {
     effect(() => {
       this.data.set(this.csv.winners());
       this.dataSource.data = this.data();
+      this.selectedRace.set(this.csv.selectedRaceName());
     })
 
     this.dataSource.sortingDataAccessor = (row, column) => {
-    if (column === 'dateTime') return row.raceDateTime?.getTime?.() ?? 0;
-    if (column === 'race') return row.raceName?.toLowerCase?.() ?? '';
-    return (row as any)[column]?.toString?.().toLowerCase?.() ?? (row as any)[column] ?? '';
+      if (column === 'dateTime') return row.raceDateTime?.getTime?.() ?? 0;
+      if (column === 'race') return row.raceName?.toLowerCase?.() ?? '';
+      return (row as any)[column]?.toString?.().toLowerCase?.() ?? (row as any)[column] ?? '';
     };
+  }
+
+  onRowClick(row: WinnerRow) : void {
+    const rowName = row.raceName;
+
+    if (this.selectedRace() === rowName)
+    {
+      this.csv.clearSelectedRace();
+    }
+    else
+    {
+      this.csv.selectRace(row);
+    }
+  }
+
+  isSelected(row: WinnerRow) : boolean
+  {
+    return this.selectedRace() === row.raceName;
   }
 
   ngAfterViewInit() {

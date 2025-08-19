@@ -26,7 +26,10 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="cols; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: cols;"></tr>
+      <tr mat-row 
+          *matRowDef="let row; columns: cols;"
+          (click)="onRowClick(row)"
+          [class.selected]="isSelected(row)"></tr>
     </table>
   </div>
 </mat-card>

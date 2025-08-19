@@ -33,7 +33,7 @@ export class RaceDetailsTable implements AfterViewInit {
   constructor(private csv: CsvService) {
     // react to store updates
     effect(() => {
-      const rows = this.csv.rows(); // all parsed rows
+      const rows = this.csv.selectedRaceDetailsRows(); // all parsed rows
       this.data.set(rows);
       this.dataSource.data = rows ?? [];
     });

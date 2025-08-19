@@ -1,11 +1,11 @@
 export interface RawRaceRow {
   Race: string;
   Racecourse: string;
-  RaceDate: string;   // e.g. 2024-05-01
-  RaceTime: string;   // e.g. 14:35
+  RaceDate: string;   // dd/MM/YYYY 
+  RaceTime: string;   // e.g. hhmm
   Horse: string;
   Jockey: string;
-  FinishingPosition: string | number;
+  FinishingPosition: number;
   // keep others for later (DistanceBeaten, TimeBeaten, RaceDistance, FieldSize...)
 }
 

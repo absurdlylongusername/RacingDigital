@@ -28,13 +28,13 @@ export class CsvService {
   async initFrom(url: string): Promise<void> {
     const csvText = await firstValueFrom(this.http.get(url, { responseType: 'text' }));
     const parsed = this.parseCsv<RawRaceRow>(csvText);
+    const cleanedData = this.cleanData(parsed);
+    this._rawRows.set(cleanedData);
 
-    this._rawRows.set(parsed);
-    
-    const winners = parsed
-    .filter(r => `${r.FinishingPosition}`.trim() === '1')
-    .map(r => this.mapToWinner(r))
-    .filter((x): x is WinnerRow => !!x);
+    const winners = cleanedData
+      .filter(r => `${r.FinishingPosition}`.trim() === '1')
+      .map(r => this.mapToWinner(r))
+      .filter((x): x is WinnerRow => !!x);
     
     console.log("Parsed winner rows:", winners.length);
     // sort by date descending, most recent first
@@ -42,8 +42,20 @@ export class CsvService {
     this._winners.set(winners);
   }
 
-  public setSelectedRace(name: string | null): void {
-    this._selectedRaceName.set(name);
+  private cleanData(rows: RawRaceRow[]): RawRaceRow[] {
+    return rows.map(row => {
+      row.Horse = row.Horse?.trim() ?? '';
+      row.Jockey = row.Jockey?.trim() ?? '';
+      row.Race = row.Race?.trim() ?? '';
+      row.RaceDate = row.RaceDate?.trim() ?? '';
+      return row;
+    });
+  }
+
+  isNumber(n: any) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
+
+  public selectRace(row: WinnerRow | null): void {
+    this._selectedRaceName.set(row?.raceName ?? null);
   }
   public clearSelectedRace(): void {
     this._selectedRaceName.set(null);

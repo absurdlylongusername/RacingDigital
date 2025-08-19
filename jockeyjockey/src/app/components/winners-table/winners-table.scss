@@ -27,3 +27,6 @@ th.mat-header-cell {
   width: 100%;
   border-collapse: collapse;
 }
+
+tr.mat-mdc-row.selected { background: rgba(25, 118, 210, 0.08); } // subtle primary tint
+tr.mat-mdc-row { cursor: pointer; }

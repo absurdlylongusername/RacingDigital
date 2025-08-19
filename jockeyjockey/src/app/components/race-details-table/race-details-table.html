@@ -1,4 +1,4 @@
-<mat-card *ngIf="data().length > 0">
+<mat-card *ngIf="data().length > 0; else empty">
   <div class="table-container">
     <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z1 details-table">
 
@@ -45,4 +45,6 @@
   </div>
 </mat-card>
 
-<p *ngIf="data().length === 0" class="empty">Select a race to view details</p>
+<ng-template #empty>
+  <p class="empty">Select a race from the winners table to view all finishers.</p>
+</ng-template>
