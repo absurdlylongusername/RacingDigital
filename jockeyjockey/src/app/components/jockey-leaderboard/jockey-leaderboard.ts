@@ -27,28 +27,38 @@ export class JockeyLeaderboard implements AfterViewInit {
   cols: Col[] = ['jockey', 'points', 'races', 'winPercentage'];
 
   horses = signal<string[]>([]);
-  selectedHorse = signal<string | null>(null);
+  selectedJockey = signal<string | null>(null);
   horseRaceCounts = signal<Record<string, number>>({});
   data = signal<JockeyRanking[]>([]);
   dataSource = new MatTableDataSource<JockeyRanking>([]);
 
   constructor(private csv: CsvService) {
-    effect(() => this.horses.set(this.csv.horses()));
-    effect(() => this.selectedHorse.set(this.csv.selectedHorse()));
+    effect(() => this.selectedJockey.set(this.csv.selectedJockey()));
 
     // Keep table in sync with service; simple sort by finishing position asc
     effect(() => {
       const rows = this.csv.jockeyRankings();
-      // TODO: ranking logic here
       this.data.set(rows);
       this.dataSource.data = rows;
     });
-
-    effect(() => this.horseRaceCounts.set(this.csv.horseRaceCounts()));
   }
 
-  onHorseChange(horse: string | null) {
-    this.csv.selectHorse(horse);
+  onRowClick(row: JockeyRanking) : void {
+    const jockey = row.jockey;
+
+    if (this.selectedJockey() === jockey)
+    {
+      this.csv.clearSelectedJockey();
+    }
+    else
+    {
+      this.csv.selectJockey(jockey);
+    }
+  }
+
+  isSelected(row: JockeyRanking) : boolean
+  {
+    return this.selectedJockey() === row.jockey;
   }
 
   ngAfterViewInit() {

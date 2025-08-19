@@ -34,3 +34,18 @@ export interface JockeyRanking {
   winPercentage: number; // 0–100
 }
 
+// ---- Scoring config ----
+export type PlacingPoints = Record<number, number>;
+
+export interface ScoringConfig {
+  placingPoints: PlacingPoints;          // e.g. {1:5, 2:3, 3:1}
+  photoThresholdSec: number;             // near-win window for 2nd place
+  nearWinFactor: number;                 // 0..1 of (points(1st) - points(2nd))
+  flatLengthsPerSecond: number;          // 6
+  jumpingLengthsPerSecond: number;       // 4
+  closeMinSec: number;                   // full close bonus if <= this
+  closeMaxSec: number;                   // zero close bonus if >= this
+  maxCloseFactor: number;                // fraction of points(1st)
+  finishPercentWeight: number;           // 0..1, scaled by points(1st)
+  shrinkageK: number;                    // >= 0
+}

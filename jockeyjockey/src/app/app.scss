@@ -10,26 +10,18 @@
 .two-col {
   display: flex;
 //   gap: 3rem;
-  align-items: stretch;  /* make columns equal height */
+  align-items: stretch;
 }
 
 
-/* left column can be fixed/capped if you like */
 .two-col > winners-table {
   flex: 1 1 60%; max-width: 60%; 
 }
 
-/* right column must be allowed to shrink */
 .two-col > race-details {
-  flex: 1 1 60%; min-width: 0; 
+  flex: 1 1 60%; 
+  min-width: 0; 
 }
-
-// /* Each child (the custom elements) behaves like a column */
-// .two-col > winners-table,
-// .two-col > race-details-table {
-//   flex: 1 1 0;
-//   min-width: 0;         /* allows proper shrinking; prevents overflow */
-// }
 
 /* Make the cards inside fill the column height */
 .two-col mat-card {
@@ -45,11 +37,4 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-}
-
-/* Responsive: stack on small screens */
-@media (max-width: 900px) {
-  .two-col {
-    flex-direction: column;
-  }
 }

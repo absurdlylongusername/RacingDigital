@@ -1,5 +1,7 @@
 <!-- Only render when a race is selected -->
 <ng-container *ngIf="selectedRaceName as race; else empty">
+  <div class="race-container">
+
   <mat-card class="race-details-card">
     <h2 class="race-title"
         [matTooltip]="race"
@@ -27,6 +29,8 @@
 
     <!-- Your existing details table, already filtered by selected race -->
   </mat-card>
+  </div>
+
 </ng-container>
 
 <ng-template #empty>

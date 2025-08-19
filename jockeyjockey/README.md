@@ -1,59 +1,27 @@
-# Jockeyjockey
+# RACING DIGITAL TECHNICAL TEST - DAVID ASUNMO
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.6.
+Plan: show winners table, can select race and make notes
 
-## Development server
+Then dropdown to select a horse, and it will show leaderboard of best jockey for that horse
 
-To start a local development server, run:
+have parameters you can change
 
-```bash
-ng serve
-```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Ideal solution
 
-## Code scaffolding
+Have jockey leaderboard with default rankings, have table with all race winners (or just all races), and then can select a race to see details of the race and also makes notes on the race
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
-```bash
-ng generate component component-name
-```
+Jockey leaderboard table ranking parameters can be changed.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Ranking has points mechanism: higher placing in race gets more points.
+But also taking into account:
+  points for being close to 1st place
+  Points for near win
+  points per place (1st = 3, 2nd = 2, 3rd = 1) can customized
+  Distance of the race also taken into account, assuming that jockeys may have more skill based on the length of the race.
+   so races have distance buckets (e.g. 1000-1700, 1700-2200, 2200+), and can see which jockey is best for each distance (assuming enough data)
+  percentile finish (where place with respect to how many racers in the race)
 
-```bash
-ng generate --help
-```
+  
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

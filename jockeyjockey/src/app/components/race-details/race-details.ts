@@ -24,13 +24,11 @@ import { RaceDetailsTable } from '../race-details-table/race-details-table';
   styleUrl: './race-details.scss'
 })
 export class RaceDetails {
-  // expose selection & note
 
-  // local input buffer so we don't write every keystroke if you don't want to
+  // probs remove this
   noteDraft = signal<string>('');
 
   constructor(private csv: CsvService) {
-    // keep the draft in sync when selection changes
     effect(() => {
       this.noteDraft.set(this.csv.selectedRaceNote());
     });

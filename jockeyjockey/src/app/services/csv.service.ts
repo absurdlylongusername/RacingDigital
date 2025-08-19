@@ -1,9 +1,10 @@
 import { Injectable, computed, signal } from '@angular/core';
 import Papa from 'papaparse';
-import { JockeyLeaderboardRow, JockeyRanking, RawRaceRow, WinnerRow } from '../models/models'
+import { JockeyLeaderboardRow, JockeyRanking, RawRaceRow, ScoringConfig, WinnerRow } from '../models/models'
 import { HttpClient } from '@angular/common/http';
 import { DateTime } from 'luxon';
 import { firstValueFrom } from 'rxjs';
+import { firstPlacePoints, mapToWinner, placingPoints, timeBehindSeconds, validateScoringConfig } from './helpers';
 
 @Injectable({ providedIn: 'root' })
 export class CsvService {
@@ -13,50 +14,150 @@ export class CsvService {
   // private readonly _jockeyLeaderboardRows = signal<JockeyLeaderboardRow[]>([]);
 
   readonly rows = computed(() => this._rawRows());
-  readonly winners = computed(() => this._winners());
+  readonly winners = computed(() => {
+    const jockey = this._selectedJockey();
+    if (!jockey) return this._winners();
+
+    const jockeyRaces = this._rawRows().filter(r => r.Jockey === jockey).map(r => r.Race);
+    return this._winners().filter(w => jockeyRaces.includes(w.raceName));
+  });
+
   // readonly jockeyLeaderboardRows = computed(() => this._jockeyLeaderboardRows());
-  readonly horses = computed(() => this._horses());
-
   private readonly _selectedRaceName = signal<string | null>(null);
-  private readonly _selectedHorse = signal<string | null>(null);
+  private readonly _selectedJockey = signal<string | null>(null);
   readonly selectedRaceName = computed(() => this._selectedRaceName());
-  readonly selectedHorse = computed(() => this._selectedHorse());
+  readonly selectedJockey = computed(() => this._selectedJockey());
 
-  private positionToPoints(position: number): number {
-    switch (position) {
-      case 1: return 3;
-      case 2: return 2;
-      case 3: return 1;
-      default: return 0;
+  readonly fieldSizesByRace = computed<Record<string, number>>(() => {
+    const fieldSizes: Record<string, number> = {};
+    const rows = this._rawRows();
+
+    for (const row of rows) {
+      if (fieldSizes[row.Race] === undefined) {
+        fieldSizes[row.Race] = 1;
+      } else {
+        fieldSizes[row.Race] += 1;
+      }
     }
+
+    return fieldSizes;
+  });
+
+  // default config
+  private scoring: ScoringConfig = {
+    placingPoints: { 1: 5, 2: 3, 3: 1 },
+    photoThresholdSec: 0.05,
+    nearWinFactor: 0.4,
+    flatLengthsPerSecond: 6,
+    jumpingLengthsPerSecond: 4,
+    closeMinSec: 0.00,
+    closeMaxSec: 0.5,
+    maxCloseFactor: 0.6,
+    finishPercentWeight: 0.05,
+    shrinkageK: 0
+  };
+
+  // bump version to recompute standings when config changes
+  private _scoringVersion = signal(0);
+
+  // call once (e.g., at end of constructor) after cleanData is wired
+  // this.validateScoringConfig(this.scoring);
+
+  setScoringConfig(partial: Partial<ScoringConfig>): void {
+    this.scoring = { ...this.scoring, ...partial };
+    validateScoringConfig(this.scoring);
+    this._scoringVersion.update(n => n + 1);
   }
 
   readonly jockeyRankings = computed<JockeyRanking[]>(() => {
+    // depend on config changes too
+    const _ = this._scoringVersion();
+
     const rows = this._rawRows();
-    if (!rows?.length) return [];
+    if (!rows) { return []; }
+    
+    const cfg = this.scoring;
+    const firstPoints = firstPlacePoints(cfg);
+    const fieldSizes = this.fieldSizesByRace();
 
-    const jockeyMap = new Map<string, { races: number; wins: number; points: number }>();
+    // accumulate per jockey
+    const accumulators: Record<string, { rides: number; wins: number; scoreSum: number }> = {};
 
-    // Count jockey races, wins and points
-    for (const r of rows) {
-      const name = r.Jockey;
-      const pos = r.FinishingPosition;
-      const pts = this.positionToPoints(pos);
+    for (const row of rows) {
+      const position = row.FinishingPosition;
 
-      const accumulator = jockeyMap.get(name) ?? { races: 0, wins: 0, points: 0 };
-      accumulator.races += 1;
-      accumulator.points += pts;
-      if (pos === 1) accumulator.wins += 1;
-      jockeyMap.set(name, accumulator);
+      // 1) base placing points
+      const basePoints = placingPoints(position, cfg);
+
+      // 2) near-win bonus for 2nd place within threshold
+      const behind = timeBehindSeconds(row, cfg);
+      let nearWinBonus = 0;
+      if (position === 2 && behind <= cfg.photoThresholdSec) {
+        nearWinBonus = cfg.nearWinFactor * (placingPoints(1, cfg) - placingPoints(2, cfg));
+      }
+
+      // 3) close-to-winner credit for any position
+      let closeCredit = 0;
+      if (behind <= cfg.closeMinSec) {
+        closeCredit = cfg.maxCloseFactor * firstPoints;
+      } else if (behind < cfg.closeMaxSec) {
+        const t = (behind - cfg.closeMinSec) / (cfg.closeMaxSec - cfg.closeMinSec);
+        closeCredit = (1 - t) * cfg.maxCloseFactor * firstPoints;
+      }
+
+      // 4) finish percentile light bonus
+      const fieldSize = fieldSizes[row.Race];
+      let finishPercent = 0;
+      if (fieldSize > 1) {
+        finishPercent = (position < 1 || position > fieldSize) ? 
+          0 :
+          (fieldSize - position) / (fieldSize - 1);
+      }
+      const finishBonus = cfg.finishPercentWeight * firstPoints * finishPercent;
+
+      const rideScore = basePoints + nearWinBonus + closeCredit + finishBonus;
+
+      const jockey = row.Jockey;
+      accumulators[jockey] ??= { rides: 0, wins: 0, scoreSum: 0 };
+
+      accumulators[jockey].rides += 1;
+      if (position === 1) {
+        accumulators[jockey].wins += 1;
+      }
+      accumulators[jockey].scoreSum += rideScore;
     }
 
+    // league mean of raw ride scores
+    let totalScore = 0;
+    let totalRides = 0;
+    for (const jockey in accumulators) {
+      totalScore += accumulators[jockey].scoreSum;
+      totalRides += accumulators[jockey].rides;
+    }
+    
+    // Some logic here supposed to normalize points a bit so that jockeys with more races but lower placing
+    // have more points than those with less races but more points, but I have commented it out cus 
+    // I am not sure if it's needed.
+
+    // const leagueMean = totalRides === 0 ? 0 : totalScore / totalRides;
     const rankings: JockeyRanking[] = [];
-    for (const [jockey, v] of jockeyMap) {
-      const winPercentage = v.races ? (v.wins / v.races) * 100 : 0;
-      rankings.push({ jockey, points: v.points, races: v.races, winPercentage });
-    }
+    for (const jockey in accumulators) {
+      const a = accumulators[jockey];
+      // const rawAverage = a.scoreSum / a.rides;
+      const n = a.rides;
+      const k = cfg.shrinkageK;
 
-    // Sort: points DESC, then win% DESC, then races DESC, then name ASC
+      // const points = (n / (n + k)) * rawAverage + (k / (n + k)) * leagueMean;
+      const winPercentage = (a.wins / a.rides) * 100;
+
+      rankings.push({
+        jockey,
+        points: a.scoreSum,
+        races: a.rides,
+        winPercentage
+      });
+    }
+    
     rankings.sort((a, b) =>
       b.points - a.points ||
       b.winPercentage - a.winPercentage ||
@@ -65,16 +166,6 @@ export class CsvService {
     );
 
     return rankings;
-  });
-
-  
-  readonly horseRaceCounts = computed<Record<string, number>>(() => {
-    const counts: Record<string, number> = {};
-    const rows = this._rawRows();
-    for (const r of rows) {
-      counts[r.Horse] = (counts[r.Horse] ?? 0) + 1;
-    }
-    return counts;
   });
 
   private readonly _raceNotes = signal<Record<string, string>>({});
@@ -91,18 +182,11 @@ export class CsvService {
     if (!raceName) return [];
     return allRows.filter(r => r.Race === raceName);
   })
-
-  readonly selectedHorseJockeyLeaderboardRows = computed(() => {
-    const horse = this._selectedHorse();
-    const allRows = this._rawRows();
-    if (!horse) return [];
-    // find
-    return allRows
-      .filter(r => r.Horse === horse)
-      .map(this.mapToJockeyLeaderboardRow)
-  })
   
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    validateScoringConfig(this.scoring);
+  }
+
   async initFrom(url: string): Promise<void> {
     const csvText = await firstValueFrom(this.http.get(url, { responseType: 'text' }));
     const parsed = this.parseCsv<RawRaceRow>(csvText);
@@ -111,7 +195,7 @@ export class CsvService {
 
     const winners = cleanedData
       .filter(r => `${r.FinishingPosition}`.trim() === '1')
-      .map(r => this.mapToWinner(r))
+      .map(r => mapToWinner(r))
       .filter((x): x is WinnerRow => !!x);
     
     console.log("Parsed winner rows:", winners.length);
@@ -123,8 +207,6 @@ export class CsvService {
     winners.sort((a,b) => b.raceDateTime.getTime() - a.raceDateTime.getTime());
     this._winners.set(winners);
   }
-
-  public raceCountForHorse = (horse: string) => this.horseRaceCounts()[horse] ?? 0
 
   setSelectedRaceNote(note: string) {
     const raceName = this.selectedRaceName();
@@ -155,12 +237,12 @@ export class CsvService {
     this._selectedRaceName.set(null);
   }
 
-  public selectHorse(horse: string | null): void {
-    this._selectedHorse.set(horse);
+  public selectJockey(jockey: string | null): void {
+    this._selectedJockey.set(jockey);
   }
 
-  public clearSelectedHorse(): void {
-    this._selectedHorse.set(null);
+  public clearSelectedJockey(): void {
+    this._selectedJockey.set(null);
   }
 
   private parseCsv<T>(text: string): T[] {
@@ -196,27 +278,5 @@ export class CsvService {
     const timeBeaten    = r.TimeBeaten;
     
     return { raceName, jockey, position, distanceBeaten, timeBeaten };
-  }
-
-  private mapToWinner(r: RawRaceRow): WinnerRow | null {
-    const raceName = r.Race?.toString().trim() || 'Race';
-    const dateStr  = r.RaceDate?.toString().trim();
-    const timeStr  = r.RaceTime?.toString().trim();
-    const horse    = r.Horse?.toString().trim();
-    const jockey   = r.Jockey?.toString().trim();
-    
-    if (!dateStr || !timeStr || !horse || !jockey) {
-      console.log("Something is null")
-      return null;
-    }
-
-    const iso = `${dateStr} ${timeStr}`;
-    const parsedRaceDateTime = DateTime.fromFormat(iso, 'dd/MM/yyyy HHmm');
-    if (!parsedRaceDateTime.isValid) {
-      console.log("Invalid date:", iso);
-      return null;
-    }
-
-    return { raceName, raceDateTime: parsedRaceDateTime.toJSDate(), horse, jockey };
   }
 }

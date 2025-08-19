@@ -29,3 +29,6 @@
 
 th.mat-header-cell { font-weight: 600; }
 .empty { text-align: center; opacity: .7; }
+
+tr.mat-mdc-row.selected { background: rgba(25, 118, 210, 0.08); } // subtle primary tint
+tr.mat-mdc-row { cursor: pointer; }
