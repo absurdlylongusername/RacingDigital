@@ -7,9 +7,9 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatDividerModule } from '@angular/material/divider';
 import { CsvService } from '../../services/csv.service';
-import { JockeyLeaderboardRow } from '../../models/models';
+import { JockeyRanking } from '../../models/models';
 
-type Col = 'race' | 'jockey' | 'position' | 'distanceBeaten' | 'timeBeaten';
+type Col = 'jockey' | 'points' | 'races' | 'winPercentage';
 
 @Component({
   selector: 'jockey-leaderboard',
@@ -24,13 +24,13 @@ type Col = 'race' | 'jockey' | 'position' | 'distanceBeaten' | 'timeBeaten';
 export class JockeyLeaderboard implements AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
 
-  cols: Col[] = ['race', 'jockey', 'position', 'distanceBeaten', 'timeBeaten'];
+  cols: Col[] = ['jockey', 'points', 'races', 'winPercentage'];
 
   horses = signal<string[]>([]);
   selectedHorse = signal<string | null>(null);
   horseRaceCounts = signal<Record<string, number>>({});
-  data = signal<JockeyLeaderboardRow[]>([]);
-  dataSource = new MatTableDataSource<JockeyLeaderboardRow>([]);
+  data = signal<JockeyRanking[]>([]);
+  dataSource = new MatTableDataSource<JockeyRanking>([]);
 
   constructor(private csv: CsvService) {
     effect(() => this.horses.set(this.csv.horses()));
@@ -38,11 +38,10 @@ export class JockeyLeaderboard implements AfterViewInit {
 
     // Keep table in sync with service; simple sort by finishing position asc
     effect(() => {
-      const rows = this.csv.selectedHorseJockeyLeaderboardRows();
+      const rows = this.csv.jockeyRankings();
       // TODO: ranking logic here
-      const sorted = [...rows].sort((a, b) => (a.position) - (b.position));
-      this.data.set(sorted);
-      this.dataSource.data = sorted;
+      this.data.set(rows);
+      this.dataSource.data = rows;
     });
 
     effect(() => this.horseRaceCounts.set(this.csv.horseRaceCounts()));

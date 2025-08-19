@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import Papa from 'papaparse';
-import { JockeyLeaderboardRow, RawRaceRow, WinnerRow } from '../models/models'
+import { JockeyLeaderboardRow, JockeyRanking, RawRaceRow, WinnerRow } from '../models/models'
 import { HttpClient } from '@angular/common/http';
 import { DateTime } from 'luxon';
 import { firstValueFrom } from 'rxjs';
@@ -22,6 +22,52 @@ export class CsvService {
   readonly selectedRaceName = computed(() => this._selectedRaceName());
   readonly selectedHorse = computed(() => this._selectedHorse());
 
+  private positionToPoints(position: number): number {
+    switch (position) {
+      case 1: return 3;
+      case 2: return 2;
+      case 3: return 1;
+      default: return 0;
+    }
+  }
+
+  readonly jockeyRankings = computed<JockeyRanking[]>(() => {
+    const rows = this._rawRows();
+    if (!rows?.length) return [];
+
+    const jockeyMap = new Map<string, { races: number; wins: number; points: number }>();
+
+    // Count jockey races, wins and points
+    for (const r of rows) {
+      const name = r.Jockey;
+      const pos = r.FinishingPosition;
+      const pts = this.positionToPoints(pos);
+
+      const accumulator = jockeyMap.get(name) ?? { races: 0, wins: 0, points: 0 };
+      accumulator.races += 1;
+      accumulator.points += pts;
+      if (pos === 1) accumulator.wins += 1;
+      jockeyMap.set(name, accumulator);
+    }
+
+    const rankings: JockeyRanking[] = [];
+    for (const [jockey, v] of jockeyMap) {
+      const winPercentage = v.races ? (v.wins / v.races) * 100 : 0;
+      rankings.push({ jockey, points: v.points, races: v.races, winPercentage });
+    }
+
+    // Sort: points DESC, then win% DESC, then races DESC, then name ASC
+    rankings.sort((a, b) =>
+      b.points - a.points ||
+      b.winPercentage - a.winPercentage ||
+      b.races - a.races ||
+      a.jockey.localeCompare(b.jockey)
+    );
+
+    return rankings;
+  });
+
+  
   readonly horseRaceCounts = computed<Record<string, number>>(() => {
     const counts: Record<string, number> = {};
     const rows = this._rawRows();
@@ -132,8 +178,14 @@ export class CsvService {
       row.Jockey = row.Jockey?.trim() ?? '';
       row.Race = row.Race?.trim() ?? '';
       row.RaceDate = row.RaceDate?.trim() ?? '';
+      if (!row.Horse || !row.Jockey || !row.Race || !row.RaceDate)
+      {
+        console.log("Found null in data", row);
+        return null;
+      }
       return row;
-    });
+    })
+    .filter(m => !!m);
   }
 
   private mapToJockeyLeaderboardRow(r: RawRaceRow): JockeyLeaderboardRow {

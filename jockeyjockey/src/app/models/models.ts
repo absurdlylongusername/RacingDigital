@@ -26,3 +26,11 @@ export interface JockeyLeaderboardRow {
   distanceBeaten: number;
   timeBeaten: number;
 }
+
+export interface JockeyRanking {
+  jockey: string;
+  points: number; // 1st=3, 2nd=2, 3rd=1
+  races: number;
+  winPercentage: number; // 0–100
+}
+
