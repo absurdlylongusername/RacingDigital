@@ -9,6 +9,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { UploadComponent } from './components/upload/upload';
 import { WinnersTable } from './components/winners-table/winners-table';
 import { RaceDetails } from './components/race-details/race-details';
+import { JockeyLeaderboard } from './components/jockey-leaderboard/jockey-leaderboard';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,8 @@ import { RaceDetails } from './components/race-details/race-details';
             MatDividerModule, 
             UploadComponent, 
             WinnersTable,
-            RaceDetails],
+            RaceDetails,
+            JockeyLeaderboard],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
