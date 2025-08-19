@@ -16,15 +16,24 @@ export class CsvService {
   private readonly _selectedRaceName = signal<string | null>(null);
   readonly selectedRaceName = computed(() => this._selectedRaceName());
 
-  constructor(private http: HttpClient) {}
+  // notes per race, keyed by race name
+  private readonly _raceNotes = signal<Map<string, string>>(new Map());
 
+  /** Current note for the selected race ('' if none/empty) */
+  readonly selectedRaceNote = computed(() => {
+    const race = this._selectedRaceName();
+    const map = this._raceNotes();
+    return race ? (map.get(race) ?? '') : '';
+  });
+  
   readonly selectedRaceDetailsRows = computed(() => {
     const raceName = this._selectedRaceName();
     const allRows = this._rawRows();
     if (!raceName) return [];
     return allRows.filter(r => r.Race.trim() === raceName);
   })
-
+  
+  constructor(private http: HttpClient) {}
   async initFrom(url: string): Promise<void> {
     const csvText = await firstValueFrom(this.http.get(url, { responseType: 'text' }));
     const parsed = this.parseCsv<RawRaceRow>(csvText);
@@ -42,17 +51,18 @@ export class CsvService {
     this._winners.set(winners);
   }
 
-  private cleanData(rows: RawRaceRow[]): RawRaceRow[] {
-    return rows.map(row => {
-      row.Horse = row.Horse?.trim() ?? '';
-      row.Jockey = row.Jockey?.trim() ?? '';
-      row.Race = row.Race?.trim() ?? '';
-      row.RaceDate = row.RaceDate?.trim() ?? '';
-      return row;
-    });
+  public setSelectedRaceNote(text: string) {
+    const race = this._selectedRaceName();
+    if (!race) return;
+    const next = new Map(this._raceNotes());
+    if (text?.trim().length) next.set(race, text);
+    else next.delete(race); // remove empty notes
+    this._raceNotes.set(next);
   }
 
-  isNumber(n: any) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
+  public getNote(raceName: string): string {
+    return this._raceNotes().get(raceName) ?? '';
+  }
 
   public selectRace(row: WinnerRow | null): void {
     this._selectedRaceName.set(row?.raceName ?? null);
@@ -68,6 +78,16 @@ export class CsvService {
       }).data ?? [];
     console.log("Parsed CSV rows:", res.length);
     return res;
+  }
+
+  private cleanData(rows: RawRaceRow[]): RawRaceRow[] {
+    return rows.map(row => {
+      row.Horse = row.Horse?.trim() ?? '';
+      row.Jockey = row.Jockey?.trim() ?? '';
+      row.Race = row.Race?.trim() ?? '';
+      row.RaceDate = row.RaceDate?.trim() ?? '';
+      return row;
+    });
   }
 
   private mapToWinner(r: RawRaceRow): WinnerRow | null {

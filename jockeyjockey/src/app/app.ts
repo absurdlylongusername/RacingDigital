@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { UploadComponent } from './components/upload/upload';
 import { WinnersTable } from './components/winners-table/winners-table';
-import { RaceDetailsTable } from './components/race-details-table/race-details-table';
+import { RaceDetails } from './components/race-details/race-details';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +21,7 @@ import { RaceDetailsTable } from './components/race-details-table/race-details-t
             MatDividerModule, 
             UploadComponent, 
             WinnersTable,
-            RaceDetailsTable],
+            RaceDetails],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

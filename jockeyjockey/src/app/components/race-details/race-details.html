@@ -1,1 +1,34 @@
-<p>race-details works!</p>
+<!-- Only render when a race is selected -->
+<ng-container *ngIf="selectedRaceName as race; else empty">
+  <mat-card class="race-details-card">
+    <h2 class="race-title"
+        [matTooltip]="race"
+        [matTooltipShowDelay]="300">
+      {{ race }}
+    </h2>
+    <race-details-table></race-details-table>
+
+    <div class="notes">
+      <mat-form-field appearance="outline" class="notes-field">
+        <mat-label>Notes about this race</mat-label>
+        <textarea
+          matInput
+          rows="4"
+          [value]="noteDraft()"
+          (input)="onNoteInput($event)"
+          placeholder="e.g. fast early pace; jockey boxed in; photo finish; try shorter trip next time.">
+        </textarea>
+      </mat-form-field>
+
+      <button mat-stroked-button color="primary" (click)="clearNote()" *ngIf="noteDraft().length">
+        Clear note
+      </button>
+    </div>
+
+    <!-- Your existing details table, already filtered by selected race -->
+  </mat-card>
+</ng-container>
+
+<ng-template #empty>
+  <p class="empty">Select a race from the winners table to see details & add notes.</p>
+</ng-template>

@@ -1,0 +1,36 @@
+:host { display: block; }
+
+/* Make sure the flex item can shrink within the two-column layout */
+:host-context(.two-col) {
+  min-width: 0; /* critical so long content doesn’t force the column wider */
+}
+
+.race-details-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.race-title {
+  font-size: 1.1rem; 
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.notes {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.notes-field { flex: 1 1 auto; min-width: 0; }
+
+/* target the inner table-container inside the child component */
+:host ::ng-deep race-details-table .table-container {
+  max-height: 400px;   /* or whatever height fits your layout */
+  overflow-y: auto;
+  position: relative;  /* required so sticky headers work properly */
+}
