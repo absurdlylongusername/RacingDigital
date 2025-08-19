@@ -1,0 +1,33 @@
+<mat-card *ngIf="data().length > 0">
+    <table mat-table matSort [dataSource]="dataSource"
+            class="mat-elevation-z1 winners-table">
+      <!-- Race -->
+      <ng-container matColumnDef="race">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef> Race </th>
+        <td mat-cell *matCellDef="let row"> {{ row.raceName }} </td>
+      </ng-container>
+
+      <!-- Date+Time -->
+      <ng-container matColumnDef="dateTime">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef> Race Date & Time </th>
+        <td mat-cell *matCellDef="let row"> {{ row.raceDateTime | date:'medium' }} </td>
+      </ng-container>
+
+      <!-- Horse -->
+      <ng-container matColumnDef="horse">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef> Winning Horse </th>
+        <td mat-cell *matCellDef="let row"> {{ row.horse }} </td>
+      </ng-container>
+
+      <!-- Jockey -->
+      <ng-container matColumnDef="jockey">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef> Winning Jockey </th>
+        <td mat-cell *matCellDef="let row"> {{ row.jockey }} </td>
+      </ng-container>
+
+      <tr mat-header-row mat-sort-header *matHeaderRowDef="cols"></tr>
+      <tr mat-row *matRowDef="let row; columns: cols;"></tr>
+    </table>
+</mat-card>
+
+<p *ngIf="data().length === 0" class="empty">No data loaded yet.</p>
