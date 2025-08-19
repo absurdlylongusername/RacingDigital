@@ -31,13 +31,22 @@ export class RaceDetailsTable implements AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(private csv: CsvService) {
-    // react to store updates
     effect(() => {
-      const rows = this.csv.selectedRaceDetailsRows(); // all parsed rows
+      const rows = this.csv.selectedRaceDetailsRows();
       this.data.set(rows);
-      this.dataSource.data = rows ?? [];
+      this.dataSource.data = rows;
     });
-
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case 'finishingPosition': return item.FinishingPosition;
+        case 'distanceBeaten': return item.DistanceBeaten;
+        case 'jockey': return item.Jockey;
+        case 'horse': return item.Horse;
+        case 'trainer': return item.Trainer;
+        case 'timeBeaten': return item.TimeBeaten;
+        default: return (item as any)[property];
+      }
+    };
   }
 
   ngAfterViewInit() {
