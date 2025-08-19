@@ -1,0 +1,48 @@
+<mat-card *ngIf="data().length > 0">
+  <div class="table-container">
+    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z1 details-table">
+
+      <!-- Finishing Position -->
+      <ng-container matColumnDef="finishingPosition">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Finishing Position</th>
+        <td mat-cell *matCellDef="let r">{{ r.FinishingPosition }}</td>
+      </ng-container>
+
+      <!-- Jockey -->
+      <ng-container matColumnDef="jockey">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Jockey</th>
+        <td mat-cell *matCellDef="let r">{{ r.Jockey }}</td>
+      </ng-container>
+
+      <!-- Trainer -->
+      <ng-container matColumnDef="trainer">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Trainer</th>
+        <td mat-cell *matCellDef="let r">{{ r.Trainer }}</td>
+      </ng-container>
+
+      <!-- Horse -->
+      <ng-container matColumnDef="horse">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Horse</th>
+        <td mat-cell *matCellDef="let r">{{ r.Horse }}</td>
+      </ng-container>
+
+      <!-- Distance Beaten -->
+      <ng-container matColumnDef="distanceBeaten">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Distance Beaten</th>
+        <td mat-cell *matCellDef="let r">{{ r.DistanceBeaten }}</td>
+      </ng-container>
+
+      <!-- Time Beaten -->
+      <ng-container matColumnDef="timeBeaten">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Time Beaten (s)</th>
+        <td mat-cell *matCellDef="let r">{{ r.TimeBeaten }}</td>
+      </ng-container>
+
+      <!-- sticky header -->
+      <tr mat-header-row *matHeaderRowDef="cols; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: cols;"></tr>
+    </table>
+  </div>
+</mat-card>
+
+<p *ngIf="data().length === 0" class="empty">Select a race to view details</p>

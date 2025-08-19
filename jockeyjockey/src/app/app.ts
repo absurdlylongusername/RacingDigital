@@ -1,6 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { UploadComponent } from './components/upload/upload';
 import { WinnersTable } from './components/winners-table/winners-table';
+import { RaceDetailsTable } from './components/race-details-table/race-details-table';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +20,8 @@ import { WinnersTable } from './components/winners-table/winners-table';
             MatIconModule, 
             MatDividerModule, 
             UploadComponent, 
-            WinnersTable],
+            WinnersTable,
+            RaceDetailsTable],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

@@ -22,17 +22,22 @@ export class WinnersTable implements AfterViewInit {
   cols = ['race','dateTime','horse','jockey'];
   data = signal<WinnerRow[]>([]);
   dataSource = new MatTableDataSource<WinnerRow>([]);
-
   @ViewChild(MatSort) sort!: MatSort;
-
-  ngAfterViewInit() {
-    this.dataSource.sort = this.sort;
-  }
 
   constructor(private csv: CsvService) {
     effect(() => {
       this.data.set(this.csv.winners());
       this.dataSource.data = this.data();
     })
+
+    this.dataSource.sortingDataAccessor = (row, column) => {
+    if (column === 'dateTime') return row.raceDateTime?.getTime?.() ?? 0;
+    if (column === 'race') return row.raceName?.toLowerCase?.() ?? '';
+    return (row as any)[column]?.toString?.().toLowerCase?.() ?? (row as any)[column] ?? '';
+    };
+  }
+
+  ngAfterViewInit() {
+    this.dataSource.sort = this.sort;
   }
 }
