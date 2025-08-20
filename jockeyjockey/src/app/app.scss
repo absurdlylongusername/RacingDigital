@@ -6,7 +6,6 @@
   gap: 1rem;
 }
 
-/* Flex row with two equal columns */
 .two-col {
   display: flex;
 //   gap: 3rem;
@@ -23,17 +22,13 @@
   min-width: 0; 
 }
 
-/* Make the cards inside fill the column height */
 .two-col mat-card {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-/* Ensure the inner scroll containers can actually grow & scroll */
 .two-col .table-container {
-  /* If you want a fixed height, set it here.
-     Or let it flex to fill the card and scroll. */
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;

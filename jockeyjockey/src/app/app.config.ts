@@ -3,7 +3,6 @@ import { ApplicationConfig,
          provideZonelessChangeDetection,
          provideAppInitializer, inject } from '@angular/core';
 import { provideRouter } from '@angular/router';
-// import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app.routes';
 import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 import { CsvService } from './services/csv.service';
@@ -20,6 +19,5 @@ export const appConfig: ApplicationConfig = {
       const csv = inject(CsvService);
       return csv.initFrom(CSV_PATH);
     }),
-    // provideAnimations()
   ]
 };

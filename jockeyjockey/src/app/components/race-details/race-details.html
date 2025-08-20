@@ -1,4 +1,3 @@
-<!-- Only render when a race is selected -->
 <ng-container *ngIf="selectedRaceName as race; else empty">
   <div class="race-container">
 
@@ -18,7 +17,7 @@
           rows="4"
           [value]="noteDraft()"
           (input)="onNoteInput($event)"
-          placeholder="e.g. fast early pace; jockey boxed in; photo finish; try shorter trip next time.">
+          placeholder="Enter race notes...">
         </textarea>
       </mat-form-field>
 
@@ -26,8 +25,6 @@
         Clear note
       </button>
     </div>
-
-    <!-- Your existing details table, already filtered by selected race -->
   </mat-card>
   </div>
 

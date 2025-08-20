@@ -3,7 +3,7 @@ export interface RawRaceRow {
   Racecourse: string;
   RaceDistance: number;
   RaceDate: string;   // dd/MM/YYYY 
-  RaceTime: string;   // e.g. hhmm
+  RaceTime: string;   // hhmm
   Horse: string;
   Jockey: string;
   Trainer: string;
@@ -29,9 +29,9 @@ export interface JockeyLeaderboardRow {
 
 export interface JockeyRanking {
   jockey: string;
-  points: number; // 1st=3, 2nd=2, 3rd=1
+  points: number;
   races: number;
-  winPercentage: number; // 0–100
+  winPercentage: number;
 }
 
 // ---- Scoring config ----
@@ -41,11 +41,11 @@ export interface ScoringConfig {
   placingPoints: PlacingPoints;          // e.g. {1:5, 2:3, 3:1}
   photoThresholdSec: number;             // near-win window for 2nd place
   nearWinFactor: number;                 // 0..1 of (points(1st) - points(2nd))
-  flatLengthsPerSecond: number;          // 6
-  jumpingLengthsPerSecond: number;       // 4
+  flatLengthsPerSecond: number;         
+  jumpingLengthsPerSecond: number;       
   closeMinSec: number;                   // full close bonus if <= this
   closeMaxSec: number;                   // zero close bonus if >= this
   maxCloseFactor: number;                // fraction of points(1st)
   finishPercentWeight: number;           // 0..1, scaled by points(1st)
-  shrinkageK: number;                    // >= 0
+  shrinkageK: number;                    
 }

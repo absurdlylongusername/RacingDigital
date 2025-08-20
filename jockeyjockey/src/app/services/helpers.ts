@@ -13,11 +13,7 @@ const JUMP_RACE_STRING = 'to be ridden by professional jump jockeys';
   }
 
   export function placingPoints(position: number, cfg: ScoringConfig): number {
-    const pts = cfg.placingPoints[position];
-    if (pts === undefined) {
-      return 0;
-    }
-    return pts;
+    return cfg.placingPoints[position] ?? 0;
   }
 
   export function getLengthsPerSecondFromRace(row: RawRaceRow, cfg: ScoringConfig): number {
@@ -32,22 +28,17 @@ const JUMP_RACE_STRING = 'to be ridden by professional jump jockeys';
     return Math.min(row.TimeBeaten, fromLengths);
   }
 
-  export function mapToWinner(r: RawRaceRow): WinnerRow | null {
-    const raceName = r.Race?.toString().trim() || 'Race';
-    const dateStr  = r.RaceDate?.toString().trim();
-    const timeStr  = r.RaceTime?.toString().trim();
-    const horse    = r.Horse?.toString().trim();
-    const jockey   = r.Jockey?.toString().trim();
-    
-    if (!dateStr || !timeStr || !horse || !jockey) {
-      console.log("Something is null")
-      return null;
-    }
+  export function mapToWinner(row: RawRaceRow): WinnerRow | null {
+    const raceName = row.Race;
+    const dateStr  = row.RaceDate;
+    const timeStr  = row.RaceTime;
+    const horse    = row.Horse;
+    const jockey   = row.Jockey;
 
     const iso = `${dateStr} ${timeStr}`;
     const parsedRaceDateTime = DateTime.fromFormat(iso, 'dd/MM/yyyy HHmm');
     if (!parsedRaceDateTime.isValid) {
-      console.log("Invalid date:", iso);
+      console.log("Invalid date:", iso, row);
       return null;
     }
 

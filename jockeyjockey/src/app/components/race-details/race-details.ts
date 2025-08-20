@@ -39,12 +39,11 @@ export class RaceDetails {
   }
 
   onNoteInput(ev: Event) {
-    // Support both <textarea> and <input>
     const target = ev.target as HTMLTextAreaElement | HTMLInputElement | null;
     const val = target?.value ?? '';
     
     this.noteDraft.set(val);
-    this.csv.setSelectedRaceNote(val); // remove if you prefer explicit "Save"
+    this.csv.setSelectedRaceNote(val);
   }
 
   clearNote() {

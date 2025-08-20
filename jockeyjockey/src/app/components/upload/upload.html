@@ -1,12 +1,9 @@
 <mat-card class="uploader">
   <div class="header">
-    <h1>Race Winners</h1>
+    <h1>Race Results</h1>
     <button mat-button (click)="fileInput?.click()">
-    <mat-icon>upload_file</mat-icon> Load Race Results (.csv)
+    <mat-icon>upload_file</mat-icon> Load Race Results (this does not work)
     </button>
     <input type="file" #fileInput accept=".csv" hidden>
-    <!-- <input type="file" #fileInput accept=".csv" hidden (change)="console.log('button clicked')"> -->
   </div>
-  <mat-divider></mat-divider>
-  <p class="hint">Upload the CSV good sir.</p>
 </mat-card>

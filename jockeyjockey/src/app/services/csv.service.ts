@@ -1,8 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import Papa from 'papaparse';
-import { JockeyLeaderboardRow, JockeyRanking, RawRaceRow, ScoringConfig, WinnerRow } from '../models/models'
+import { JockeyRanking, RawRaceRow, ScoringConfig, WinnerRow } from '../models/models'
 import { HttpClient } from '@angular/common/http';
-import { DateTime } from 'luxon';
 import { firstValueFrom } from 'rxjs';
 import { firstPlacePoints, mapToWinner, placingPoints, timeBehindSeconds, validateScoringConfig } from './helpers';
 
@@ -11,7 +10,6 @@ export class CsvService {
   private readonly _winners = signal<WinnerRow[]>([]);
   private readonly _horses = signal<string[]>([]);
   private readonly _rawRows = signal<RawRaceRow[]>([]);
-  // private readonly _jockeyLeaderboardRows = signal<JockeyLeaderboardRow[]>([]);
 
   readonly rows = computed(() => this._rawRows());
   readonly winners = computed(() => {
@@ -22,7 +20,6 @@ export class CsvService {
     return this._winners().filter(w => jockeyRaces.includes(w.raceName));
   });
 
-  // readonly jockeyLeaderboardRows = computed(() => this._jockeyLeaderboardRows());
   private readonly _selectedRaceName = signal<string | null>(null);
   private readonly _selectedJockey = signal<string | null>(null);
   readonly selectedRaceName = computed(() => this._selectedRaceName());
@@ -43,7 +40,6 @@ export class CsvService {
     return fieldSizes;
   });
 
-  // default config
   private scoring: ScoringConfig = {
     placingPoints: { 1: 5, 2: 3, 3: 1 },
     photoThresholdSec: 0.05,
@@ -60,9 +56,6 @@ export class CsvService {
   // bump version to recompute standings when config changes
   private _scoringVersion = signal(0);
 
-  // call once (e.g., at end of constructor) after cleanData is wired
-  // this.validateScoringConfig(this.scoring);
-
   setScoringConfig(partial: Partial<ScoringConfig>): void {
     this.scoring = { ...this.scoring, ...partial };
     validateScoringConfig(this.scoring);
@@ -70,7 +63,6 @@ export class CsvService {
   }
 
   readonly jockeyRankings = computed<JockeyRanking[]>(() => {
-    // depend on config changes too
     const _ = this._scoringVersion();
 
     const rows = this._rawRows();
@@ -127,7 +119,6 @@ export class CsvService {
       accumulators[jockey].scoreSum += rideScore;
     }
 
-    // league mean of raw ride scores
     let totalScore = 0;
     let totalRides = 0;
     for (const jockey in accumulators) {
@@ -220,8 +211,7 @@ export class CsvService {
         return rest;
       }
 
-      // set/update key
-      if (prev[raceName] === trimmed) return prev; // no-op if unchanged
+      if (prev[raceName] === trimmed) return prev;
       return { ...prev, [raceName]: trimmed };
     });
   }
@@ -268,15 +258,5 @@ export class CsvService {
       return row;
     })
     .filter(m => !!m);
-  }
-
-  private mapToJockeyLeaderboardRow(r: RawRaceRow): JockeyLeaderboardRow {
-    const raceName = r.Race;
-    const jockey   = r.Jockey;
-    const position  = r.FinishingPosition;
-    const distanceBeaten  = r.DistanceBeaten;
-    const timeBeaten    = r.TimeBeaten;
-    
-    return { raceName, jockey, position, distanceBeaten, timeBeaten };
   }
 }

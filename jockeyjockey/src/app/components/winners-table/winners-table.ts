@@ -6,11 +6,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTableDataSource } from '@angular/material/table';
-import {MatSort, Sort, MatSortModule} from '@angular/material/sort';
+import {MatSort, MatSortModule} from '@angular/material/sort';
 import { CsvService } from '../../services/csv.service';
 import { WinnerRow } from '../../models/models';
-
-
 
 @Component({
   selector: 'winners-table',

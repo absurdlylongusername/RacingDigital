@@ -35,7 +35,6 @@ export class JockeyLeaderboard implements AfterViewInit {
   constructor(private csv: CsvService) {
     effect(() => this.selectedJockey.set(this.csv.selectedJockey()));
 
-    // Keep table in sync with service; simple sort by finishing position asc
     effect(() => {
       const rows = this.csv.jockeyRankings();
       this.data.set(rows);

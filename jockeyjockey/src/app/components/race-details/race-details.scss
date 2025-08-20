@@ -1,8 +1,7 @@
 :host { display: block; }
 
-/* Make sure the flex item can shrink within the two-column layout */
 :host-context(.two-col) {
-  min-width: 0; /* critical so long content doesn’t force the column wider */
+  min-width: 0; 
 }
 
 .race-details-card {
@@ -30,7 +29,7 @@
 
 /* target the inner table-container inside the child component */
 :host ::ng-deep race-details-table .table-container {
-  max-height: 400px;   /* or whatever height fits your layout */
+  max-height: 400px;
   overflow-y: auto;
-  position: relative;  /* required so sticky headers work properly */
+  position: relative;  
 }

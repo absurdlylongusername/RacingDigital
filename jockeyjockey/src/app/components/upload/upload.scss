@@ -1,12 +1,13 @@
 mat-card {
   max-width: 80vw;
   margin-inline: auto;
+  background-color: transparent;
 }
 
 .uploader .header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1rem;
 }
 
 h1 {
